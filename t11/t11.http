@@ -1,0 +1,6 @@
+@t11_HostAddress = http://localhost:5154
+
+GET {{t11_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
