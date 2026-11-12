@@ -1,3 +1,4 @@
+using Npgsql;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,6 +22,17 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty; 
     });
 }
+
+app.MapGet("/ping", async (IConfiguration cfg) =>
+{
+    await using var conn = new NpgsqlConnection(cfg.GetConnectionString("Supabase"));
+    await conn.OpenAsync();
+    await using var cmd = new NpgsqlCommand(
+        "select count(*) from information_schema.tables where table_schema = 'public'", conn);
+    return $"Ket noi OK. So bang trong schema public: {await cmd.ExecuteScalarAsync()}";
+});
+
+
 
 app.UseHttpsRedirection();
 
