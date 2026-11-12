@@ -1,10 +1,13 @@
 using Npgsql;
+using Microsoft.EntityFrameworkCore;
+using t11.Infrastructure.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-
+builder.Services.AddDbContext<KhoDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
