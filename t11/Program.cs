@@ -1,6 +1,10 @@
 using Npgsql;
 using Microsoft.EntityFrameworkCore;
+using Mapster;
+using t11.Application.Mapping;
 using t11.Infrastructure.Persistence;
+using t11.Infrastructure.Services;
+using t11.ExceptionHandling;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,12 +12,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<KhoDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
+var mapsterConfig = TypeAdapterConfig.GlobalSettings;
+CrudMapsterConfiguration.Register(mapsterConfig);
+builder.Services.AddSingleton(mapsterConfig);
+builder.Services.AddCrudServices();
+builder.Services.AddExceptionHandler<DatabaseExceptionHandler>();
+builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
