@@ -17,11 +17,9 @@ var allowedOrigins = builder.Configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
-    {
         policy.WithOrigins(allowedOrigins)
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+              .AllowAnyHeader()
+              .AllowAnyMethod());
 });
 builder.Services.AddDbContext<KhoDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Supabase")));
@@ -61,8 +59,10 @@ app.MapGet("/ping", async (IConfiguration cfg) =>
 
 
 
-app.UseHttpsRedirection();
-
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("Frontend");
 app.UseAuthorization();
 
