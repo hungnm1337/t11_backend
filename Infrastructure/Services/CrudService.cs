@@ -48,7 +48,7 @@ public class CrudService<TEntity, TKey, TReq, TRes>(
     public virtual async Task<TRes> CreateAsync(TReq req, CancellationToken ct)
     {
         var entity = req.Adapt<TEntity>();
-        var key = EF.Property<TKey>(entity, _keyName);
+        var key = GetKeyValue(entity);
         var exists = await db.Set<TEntity>()
             .AsNoTracking()
             .AnyAsync(item => EF.Property<TKey>(item, _keyName)!.Equals(key), ct);
@@ -59,7 +59,7 @@ public class CrudService<TEntity, TKey, TReq, TRes>(
         db.Set<TEntity>().Add(entity);
         await db.SaveChangesAsync(ct);
 
-        key = EF.Property<TKey>(entity, _keyName);
+        key = GetKeyValue(entity);
         return await db.Set<TEntity>()
             .AsNoTracking()
             .Where(item => EF.Property<TKey>(item, _keyName)!.Equals(key))
@@ -107,6 +107,17 @@ public class CrudService<TEntity, TKey, TReq, TRes>(
                 $"CRUD dùng chung chỉ hỗ trợ khóa chính đơn; {entityType.Name} có khóa ghép.");
 
         return primaryKey.Properties[0].Name;
+    }
+
+    private TKey GetKeyValue(TEntity entity)
+    {
+        var property = typeof(TEntity).GetProperty(_keyName)
+            ?? throw new InvalidOperationException(
+                $"Entity {typeof(TEntity).Name} không có thuộc tính khóa {_keyName}.");
+
+        return (TKey)(property.GetValue(entity)
+            ?? throw new InvalidOperationException(
+                $"Khóa {_keyName} của entity {typeof(TEntity).Name} không được để trống."));
     }
 
     private static TypeAdapterConfig CreateUpdateConfig(KhoDbContext context, Type entityType)
